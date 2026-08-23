@@ -57,6 +57,9 @@ rotate:
 
 destroy:
 	terraform -chdir=terraform destroy
+	@if ! terraform -chdir=terraform output -raw vpn_ip >/dev/null 2>&1; then \
+		rm -f -- "$(CURDIR)/.runtime/known_hosts"; \
+	fi
 
 clean-secrets:
 	rm -rf -- "$(CURDIR)/secrets"

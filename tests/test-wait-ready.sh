@@ -32,6 +32,11 @@ cat >"${TEST_DIR}/bin/ssh" <<'EOF'
 set -eu
 arguments="$*"
 
+if [[ "${arguments}" != *"IdentitiesOnly=yes"* ]]; then
+  echo "missing IdentitiesOnly=yes" >&2
+  exit 1
+fi
+
 if [[ "${arguments}" == *"bootstrap-complete"* ]]; then
   if [[ "${MOCK_BOOTSTRAP_STATE:-failed}" == "failed" ]]; then
     echo "failed"

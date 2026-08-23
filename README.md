@@ -91,9 +91,15 @@ aws sts get-caller-identity
 Create a dedicated local key if needed:
 
 ```bash
-ssh-keygen -t ed25519 -a 64 -f ~/.ssh/beijing-vps
+ssh-keygen -t rsa -b 4096 -a 64 -f ~/.ssh/beijing-vps
 chmod 600 ~/.ssh/beijing-vps
+ssh-add --apple-use-keychain ~/.ssh/beijing-vps
 ```
+
+Choose a passphrase when prompted. The final command stores it in the macOS
+Keychain and loads the key into `ssh-agent`; the automation uses non-interactive
+SSH and therefore cannot prompt for the passphrase itself. Repeat `ssh-add` if
+the key is removed from the agent before running an operational command.
 
 In the Lightsail console, select the Tokyo region and upload
 `~/.ssh/beijing-vps.pub` as a custom key named `beijing-vps`. Key pairs are

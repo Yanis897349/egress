@@ -44,6 +44,7 @@ ssh_options() {
   SSH_OPTIONS=(
     -o BatchMode=yes
     -o "ConnectTimeout=${SSH_CONNECT_TIMEOUT_SECONDS}"
+    -o IdentitiesOnly=yes
     -o StrictHostKeyChecking=accept-new
     -o "UserKnownHostsFile=${KNOWN_HOSTS_FILE}"
     -i "${SSH_KEY}"
