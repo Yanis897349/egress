@@ -15,9 +15,9 @@ HY2_FILE="${SECRETS_DIR}/hysteria2.txt"
 echo
 echo "VLESS + REALITY"
 echo
-qrencode -t ANSIUTF8 <"${VLESS_FILE}"
+qrencode -t ANSIUTF8 "$(<"${VLESS_FILE}")"
 
 echo
 echo "Hysteria2"
 echo
-qrencode -t ANSIUTF8 <"${HY2_FILE}"
+qrencode -t ANSIUTF8 "$(<"${HY2_FILE}")"
