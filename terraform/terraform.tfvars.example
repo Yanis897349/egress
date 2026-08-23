@@ -1,0 +1,9 @@
+bundle_id     = "small_3_0"
+key_pair_name = "beijing-vps"
+
+# Optional overrides:
+# aws_region       = "ap-northeast-1"
+# availability_zone = "ap-northeast-1a"
+# instance_name    = "beijing-vpn"
+# blueprint_id     = "ubuntu_24_04"
+# reality_sni      = "www.microsoft.com"
