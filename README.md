@@ -114,6 +114,45 @@ The configuration accepts these settings:
 | `key_pair_name` | Existing Lightsail key pair in `aws_region` |
 | `reality_sni` | TLS 1.3-capable REALITY handshake target |
 
+### Lightsail instance plans
+
+This project uses Linux/Unix Lightsail bundles with a public IPv4 address. The
+following table lists every general-purpose size, from Nano through 16Xlarge;
+set its bundle ID as `bundle_id` in `terraform/terraform.tfvars`. Micro is the
+checked-in example selection and is highlighted below.
+
+| Plan | Bundle ID | USD/month | vCPUs | RAM | SSD | Monthly transfer |
+|---|---|---:|---:|---:|---:|---:|
+| Nano | `nano_3_0` | $5 | 2 | 0.5 GB | 20 GB | 1 TB |
+| **Micro (example)** | **`micro_3_0`** | **$7** | **2** | **1 GB** | **40 GB** | **2 TB** |
+| Small | `small_3_0` | $12 | 2 | 2 GB | 60 GB | 3 TB |
+| Medium | `medium_3_0` | $24 | 2 | 4 GB | 80 GB | 4 TB |
+| Large | `large_3_0` | $44 | 2 | 8 GB | 160 GB | 5 TB |
+| Xlarge | `xlarge_3_0` | $84 | 4 | 16 GB | 320 GB | 6 TB |
+| 2Xlarge | `2xlarge_3_0` | $164 | 8 | 32 GB | 640 GB | 7 TB |
+| 4Xlarge | `4xlarge_3_0` | $384 | 16 | 64 GB | 1,280 GB | 8 TB |
+| 8Xlarge | `8xlarge_3_0` | $884 | 32 | 128 GB | 1,280 GB | 9 TB |
+| 12Xlarge | `12xlarge_3_0` | $1,324 | 48 | 192 GB | 1,280 GB | 10 TB |
+| 16Xlarge | `16xlarge_3_0` | $1,764 | 64 | 256 GB | 1,280 GB | 10 TB |
+
+These are AWS's published public-IPv4 monthly price ceilings and specifications
+as of August 24, 2026; usage is billed hourly up to the monthly amount. Both
+inbound and outbound traffic consume the allowance, but AWS charges overage
+only for eligible outbound traffic. In Tokyo, that overage is currently
+$0.14/GB. See the [AWS bundle table](https://docs.aws.amazon.com/lightsail/latest/userguide/amazon-lightsail-bundles.html)
+and [data-transfer rules](https://docs.aws.amazon.com/lightsail/latest/userguide/amazon-lightsail-faq-data-transfer-allowance.html)
+for details.
+
+Prices, bundle availability, and specifications can change. Check the active
+Tokyo catalog before editing `bundle_id`:
+
+```bash
+aws lightsail get-bundles \
+  --region ap-northeast-1 \
+  --query 'bundles[?isActive && contains(supportedPlatforms, `LINUX_UNIX`)].[bundleId,name,price,cpuCount,ramSizeInGb,diskSizeInGb,transferPerMonthInGb]' \
+  --output table
+```
+
 `bundle_id` and `key_pair_name` are required. The checked-in example and
 Terraform defaults correspond to the currently supported regional profile;
 use its [region guide](docs/region/beijing.md) for the exact values and
