@@ -1,0 +1,8 @@
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Pinned Xray release checksum"
+targetRules = ["jfrog-identity-token"]
+regexTarget = "line"
+regexes = ['''XRAY_SHA256="[0-9a-f]{64}"''']

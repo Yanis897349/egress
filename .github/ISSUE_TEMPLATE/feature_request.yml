@@ -1,0 +1,36 @@
+name: Feature request
+description: Propose a focused improvement.
+title: "[Feature]: "
+labels:
+  - enhancement
+body:
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Preflight checks
+      options:
+        - label: I searched for an existing request covering this use case.
+          required: true
+        - label: This request contains no credentials or sensitive deployment data.
+          required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What use case is difficult or unsupported today?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed change
+      description: Describe the desired behavior and any alternatives considered.
+    validations:
+      required: true
+  - type: textarea
+    id: tradeoffs
+    attributes:
+      label: Operational and security tradeoffs
+      description: Note effects on cost, exposure, portability, compatibility, or maintenance.
+    validations:
+      required: true
