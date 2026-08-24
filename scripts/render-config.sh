@@ -41,14 +41,16 @@ valid_ipv4 "${SERVER_IP}" || {
 }
 
 jq -e '
-  .schema_version == 1 and
+  .schema_version == 2 and
   (.reality_sni | type == "string" and test("^(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\\.)+[A-Za-z]{2,63}$")) and
   (.vless_uuid | type == "string" and test("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$")) and
   (.reality_public_key | type == "string" and test("^[A-Za-z0-9_-]{40,64}$")) and
   (.reality_short_id | type == "string" and test("^[0-9a-fA-F]{2,16}$")) and
   (.hysteria2_password | type == "string" and test("^[0-9a-fA-F]{48}$")) and
   (.hysteria2_obfs_password | type == "string" and test("^[0-9a-fA-F]{48}$")) and
-  (.hysteria2_cert_sha256 | type == "string" and test("^([0-9A-Fa-f]{2}:){31}[0-9A-Fa-f]{2}$"))
+  (.hysteria2_cert_sha256 | type == "string" and test("^([0-9A-Fa-f]{2}:){31}[0-9A-Fa-f]{2}$")) and
+  (.sing_box_version | type == "string" and length > 0) and
+  (.xray_version | type == "string" and length > 0)
 ' "${MANIFEST_FILE}" >/dev/null || {
   echo "Error: Client manifest is missing required fields or contains invalid values." >&2
   exit 1

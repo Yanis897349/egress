@@ -55,5 +55,6 @@ while true; do
   sleep "${POLL_INTERVAL_SECONDS}"
 done
 
-remote_ssh "${IP}" "sudo systemctl is-active --quiet sing-box"
-echo "Bootstrap is complete and sing-box is active."
+remote_ssh "${IP}" \
+  "sudo systemctl is-active --quiet xray && sudo systemctl is-active --quiet sing-box"
+echo "Bootstrap is complete; Xray and sing-box are active."

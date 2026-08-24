@@ -13,10 +13,18 @@ readonly FAILED_MARKER="${STATE_DIR}/bootstrap-failed"
 readonly SERVER_SECRETS="${STATE_DIR}/server-secrets.json"
 readonly CLIENT_DIR="/root/vpn-client"
 readonly CLIENT_MANIFEST="${CLIENT_DIR}/manifest.json"
-readonly CONFIG_DIR="/etc/sing-box"
-readonly CONFIG_FILE="${CONFIG_DIR}/config.json"
-readonly HY2_KEY="${CONFIG_DIR}/hysteria2.key"
-readonly HY2_CERT="${CONFIG_DIR}/hysteria2.crt"
+readonly SING_BOX_CONFIG_DIR="/etc/sing-box"
+readonly SING_BOX_CONFIG_FILE="${SING_BOX_CONFIG_DIR}/config.json"
+readonly HY2_KEY="${SING_BOX_CONFIG_DIR}/hysteria2.key"
+readonly HY2_CERT="${SING_BOX_CONFIG_DIR}/hysteria2.crt"
+readonly XRAY_VERSION="v26.3.27"
+readonly XRAY_SHA256="23cd9af937744d97776ee35ecad4972cf4b2109d1e0fe6be9930467608f7c8ae"
+readonly XRAY_ARCHIVE="/tmp/Xray-linux-64.zip"
+readonly XRAY_BINARY="/usr/local/bin/xray"
+readonly XRAY_CONFIG_DIR="/etc/xray"
+readonly XRAY_CONFIG_FILE="${XRAY_CONFIG_DIR}/config.json"
+readonly REALITY_CHECK_CONFIG="/tmp/reality-client-check.json"
+readonly REALITY_CHECK_PORT=19080
 readonly LOG_FILE="/var/log/beijing-vps-bootstrap.log"
 
 install -d -m 0755 "${STATE_DIR}"
@@ -52,6 +60,7 @@ apt-get install -y \
   gnupg \
   jq \
   openssl \
+  unzip \
   ufw
 
 install -d -m 0755 /etc/apt/keyrings
@@ -71,6 +80,17 @@ EOF
 apt-get update
 apt-get install -y sing-box
 
+echo "Installing Xray ${XRAY_VERSION}..."
+curl -fsSL \
+  "https://github.com/XTLS/Xray-core/releases/download/${XRAY_VERSION}/Xray-linux-64.zip" \
+  -o "${XRAY_ARCHIVE}"
+printf '%s  %s\n' "${XRAY_SHA256}" "${XRAY_ARCHIVE}" | sha256sum -c -
+unzip -p "${XRAY_ARCHIVE}" xray >"${XRAY_BINARY}.tmp"
+chmod 0755 "${XRAY_BINARY}.tmp"
+mv "${XRAY_BINARY}.tmp" "${XRAY_BINARY}"
+rm -f "${XRAY_ARCHIVE}"
+"${XRAY_BINARY}" version
+
 if [[ -f /usr/lib/sysusers.d/sing-box.conf ]]; then
   systemd-sysusers /usr/lib/sysusers.d/sing-box.conf || true
 fi
@@ -81,6 +101,15 @@ if ! id sing-box >/dev/null 2>&1; then
     --home-dir /var/lib/sing-box \
     --shell /usr/sbin/nologin \
     sing-box
+fi
+
+if ! id xray >/dev/null 2>&1; then
+  useradd \
+    --system \
+    --user-group \
+    --home-dir /var/lib/xray \
+    --shell /usr/sbin/nologin \
+    xray
 fi
 
 cat >/etc/sysctl.d/99-beijing-vps.conf <<'EOF'
@@ -171,7 +200,8 @@ SHORT_ID="$(jq -r '.reality_short_id' "${SERVER_SECRETS}")"
 HY2_PASSWORD="$(jq -r '.hysteria2_password' "${SERVER_SECRETS}")"
 HY2_OBFS_PASSWORD="$(jq -r '.hysteria2_obfs_password' "${SERVER_SECRETS}")"
 
-install -d -m 0750 -o root -g sing-box "${CONFIG_DIR}"
+install -d -m 0750 -o root -g sing-box "${SING_BOX_CONFIG_DIR}"
+install -d -m 0750 -o root -g xray "${XRAY_CONFIG_DIR}"
 
 if [[ ! -s "${HY2_KEY}" || ! -s "${HY2_CERT}" ]]; then
   echo "Generating Hysteria2 certificate..."
@@ -198,10 +228,6 @@ chmod 0640 "${HY2_KEY}"
 chmod 0644 "${HY2_CERT}"
 
 jq -n \
-  --arg reality_sni "${REALITY_SNI}" \
-  --arg uuid "${UUID}" \
-  --arg private_key "${PRIVATE_KEY}" \
-  --arg short_id "${SHORT_ID}" \
   --arg hy2_password "${HY2_PASSWORD}" \
   --arg hy2_obfs_password "${HY2_OBFS_PASSWORD}" \
   '{
@@ -210,33 +236,6 @@ jq -n \
       timestamp: true
     },
     inbounds: [
-      {
-        type: "vless",
-        tag: "vless-reality-in",
-        listen: "0.0.0.0",
-        listen_port: 443,
-        users: [
-          {
-            name: "exchange",
-            uuid: $uuid,
-            flow: "xtls-rprx-vision"
-          }
-        ],
-        tls: {
-          enabled: true,
-          server_name: $reality_sni,
-          reality: {
-            enabled: true,
-            handshake: {
-              server: $reality_sni,
-              server_port: 443
-            },
-            private_key: $private_key,
-            short_id: [$short_id],
-            max_time_difference: "1m"
-          }
-        }
-      },
       {
         type: "hysteria2",
         tag: "hy2-in",
@@ -269,27 +268,179 @@ jq -n \
     route: {
       final: "direct"
     }
-  }' >"${CONFIG_FILE}.tmp"
+  }' >"${SING_BOX_CONFIG_FILE}.tmp"
 
-chown root:sing-box "${CONFIG_FILE}.tmp"
-chmod 0640 "${CONFIG_FILE}.tmp"
-mv "${CONFIG_FILE}.tmp" "${CONFIG_FILE}"
+chown root:sing-box "${SING_BOX_CONFIG_FILE}.tmp"
+chmod 0640 "${SING_BOX_CONFIG_FILE}.tmp"
+mv "${SING_BOX_CONFIG_FILE}.tmp" "${SING_BOX_CONFIG_FILE}"
 
-sing-box check -c "${CONFIG_FILE}"
+jq -n \
+  --arg reality_sni "${REALITY_SNI}" \
+  --arg uuid "${UUID}" \
+  --arg private_key "${PRIVATE_KEY}" \
+  --arg short_id "${SHORT_ID}" \
+  '{
+    log: {
+      loglevel: "warning"
+    },
+    inbounds: [
+      {
+        tag: "vless-reality-in",
+        listen: "0.0.0.0",
+        port: 443,
+        protocol: "vless",
+        settings: {
+          clients: [
+            {
+              id: $uuid,
+              email: "exchange",
+              flow: "xtls-rprx-vision"
+            }
+          ],
+          decryption: "none"
+        },
+        streamSettings: {
+          network: "tcp",
+          security: "reality",
+          realitySettings: {
+            show: false,
+            target: ($reality_sni + ":443"),
+            xver: 0,
+            serverNames: [$reality_sni],
+            privateKey: $private_key,
+            minClientVer: "0.0.0",
+            maxTimeDiff: 60000,
+            shortIds: [$short_id]
+          }
+        }
+      }
+    ],
+    outbounds: [
+      {
+        tag: "direct",
+        protocol: "freedom"
+      }
+    ]
+  }' >"${XRAY_CONFIG_FILE}.tmp"
+
+chown root:xray "${XRAY_CONFIG_FILE}.tmp"
+chmod 0640 "${XRAY_CONFIG_FILE}.tmp"
+mv "${XRAY_CONFIG_FILE}.tmp" "${XRAY_CONFIG_FILE}"
+
+cat >/etc/systemd/system/xray.service <<EOF
+[Unit]
+Description=Xray VLESS REALITY service
+After=network-online.target nss-lookup.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=xray
+Group=xray
+AmbientCapabilities=CAP_NET_BIND_SERVICE
+CapabilityBoundingSet=CAP_NET_BIND_SERVICE
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ExecStart=${XRAY_BINARY} run -config ${XRAY_CONFIG_FILE}
+Restart=on-failure
+RestartSec=5s
+LimitNOFILE=1048576
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+sing-box check -c "${SING_BOX_CONFIG_FILE}"
+"${XRAY_BINARY}" run -test -config "${XRAY_CONFIG_FILE}"
 systemctl daemon-reload
 systemctl enable sing-box
+systemctl enable xray
 systemctl restart sing-box
+systemctl restart xray
 
 for _attempt in {1..20}; do
-  if systemctl is-active --quiet sing-box; then
+  if systemctl is-active --quiet sing-box && \
+    systemctl is-active --quiet xray; then
     break
   fi
   sleep 1
 done
 
 systemctl is-active --quiet sing-box
-ss -H -lnt | awk '$4 ~ /:443$/ { found = 1 } END { exit !found }'
-ss -H -lnu | awk '$4 ~ /:443$/ { found = 1 } END { exit !found }'
+systemctl is-active --quiet xray
+ss -H -lntp | awk '$4 ~ /:443$/ && /xray/ { found = 1 } END { exit !found }'
+ss -H -lnup | awk '$4 ~ /:443$/ && /sing-box/ { found = 1 } END { exit !found }'
+
+echo "Checking VLESS + REALITY end to end with a sing-box client..."
+jq -n \
+  --arg reality_sni "${REALITY_SNI}" \
+  --arg server "127.0.0.1" \
+  --arg uuid "${UUID}" \
+  --arg public_key "${PUBLIC_KEY}" \
+  --arg short_id "${SHORT_ID}" \
+  --argjson port "${REALITY_CHECK_PORT}" \
+  '{
+    log: {
+      level: "warn"
+    },
+    inbounds: [
+      {
+        type: "mixed",
+        tag: "reality-check-in",
+        listen: "127.0.0.1",
+        listen_port: $port
+      }
+    ],
+    outbounds: [
+      {
+        type: "vless",
+        tag: "reality-check-out",
+        server: $server,
+        server_port: 443,
+        uuid: $uuid,
+        flow: "xtls-rprx-vision",
+        tls: {
+          enabled: true,
+          server_name: $reality_sni,
+          utls: {
+            enabled: true,
+            fingerprint: "chrome"
+          },
+          reality: {
+            enabled: true,
+            public_key: $public_key,
+            short_id: $short_id
+          }
+        }
+      }
+    ],
+    route: {
+      final: "reality-check-out"
+    }
+  }' >"${REALITY_CHECK_CONFIG}"
+
+sing-box check -c "${REALITY_CHECK_CONFIG}"
+sing-box run -c "${REALITY_CHECK_CONFIG}" &
+REALITY_CHECK_PID=$!
+sleep 1
+
+if ! timeout 20 curl -fsS \
+  --proxy "socks5h://127.0.0.1:${REALITY_CHECK_PORT}" \
+  https://api.ipify.org \
+  >/dev/null; then
+  kill "${REALITY_CHECK_PID}" >/dev/null 2>&1 || true
+  wait "${REALITY_CHECK_PID}" 2>/dev/null || true
+  rm -f "${REALITY_CHECK_CONFIG}"
+  echo "VLESS + REALITY end-to-end check failed." >&2
+  exit 1
+fi
+
+kill "${REALITY_CHECK_PID}" >/dev/null 2>&1 || true
+wait "${REALITY_CHECK_PID}" 2>/dev/null || true
+rm -f "${REALITY_CHECK_CONFIG}"
+echo "VLESS + REALITY end-to-end check passed."
 
 HY2_PIN="$(
   openssl x509 \
@@ -300,10 +451,11 @@ HY2_PIN="$(
     sed 's/^.*=//'
 )"
 SING_BOX_VERSION="$(sing-box version | awk 'NR == 1 { print $3 }')"
+XRAY_INSTALLED_VERSION="$("${XRAY_BINARY}" version | awk 'NR == 1 { print $2 }')"
 
 install -d -m 0700 "${CLIENT_DIR}"
 jq -n \
-  --argjson schema_version 1 \
+  --argjson schema_version 2 \
   --arg reality_sni "${REALITY_SNI}" \
   --arg vless_uuid "${UUID}" \
   --arg reality_public_key "${PUBLIC_KEY}" \
@@ -312,6 +464,7 @@ jq -n \
   --arg hysteria2_obfs_password "${HY2_OBFS_PASSWORD}" \
   --arg hysteria2_cert_sha256 "${HY2_PIN}" \
   --arg sing_box_version "${SING_BOX_VERSION}" \
+  --arg xray_version "${XRAY_INSTALLED_VERSION}" \
   '{
     schema_version: $schema_version,
     reality_sni: $reality_sni,
@@ -321,7 +474,8 @@ jq -n \
     hysteria2_password: $hysteria2_password,
     hysteria2_obfs_password: $hysteria2_obfs_password,
     hysteria2_cert_sha256: $hysteria2_cert_sha256,
-    sing_box_version: $sing_box_version
+    sing_box_version: $sing_box_version,
+    xray_version: $xray_version
   }' >"${CLIENT_MANIFEST}.tmp"
 
 chmod 0600 "${CLIENT_MANIFEST}.tmp"
