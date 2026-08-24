@@ -190,8 +190,88 @@ Override the timeout when a region is slow:
 WAIT_TIMEOUT_SECONDS=1200 make deploy
 ```
 
-Import the displayed links into client applications that support VLESS +
-REALITY and Hysteria2. Client import and end-to-end traffic testing are manual.
+## Connect client devices
+
+[Hiddify](https://github.com/hiddify/hiddify-app) is the recommended client for
+this project. It is open source, supports both of the generated single-profile
+links, and is available for iOS, macOS, Android, Windows, and Linux. Install it
+only from an official source:
+
+| Device | Official download |
+|---|---|
+| iPhone or iPad | [Apple App Store](https://apps.apple.com/app/id6596777532) |
+| macOS, Windows, or Linux | [Hiddify GitHub releases](https://github.com/hiddify/hiddify-app/releases/latest) |
+| Android | [Google Play](https://play.google.com/store/apps/details?id=app.hiddify.com) or [GitHub releases](https://github.com/hiddify/hiddify-app/releases/latest) |
+
+The App Store version also runs on supported Apple-silicon Macs. Store and
+download availability varies by region, so install and test the clients before
+travel. The Hiddify interface can change between releases; its official
+[profile-import tutorial](https://github.com/hiddify/Hiddify-Manager/wiki/Tutorial-for-HiddifyNext-app#adding-a-profile-to-the-app)
+uses **Add from clipboard** under the `+` button.
+
+### iPhone or iPad
+
+On the Mac used to deploy the server, display the locally generated QR codes:
+
+```bash
+make qr
+```
+
+In Hiddify on the phone or tablet:
+
+1. Tap `+`, choose the QR scanner, and allow camera access if prompted.
+2. Scan the complete **VLESS + REALITY** QR code shown in Terminal.
+3. Repeat for the **Hysteria2** QR code. They are two independent profiles.
+4. Select either `Tokyo-REALITY` or `Tokyo-HY2`, tap Connect, and approve the
+   iOS VPN configuration when prompted.
+
+Use Hiddify's scanner rather than the standard Camera app. If a QR code does
+not fit completely in the Terminal window, enlarge the window or reduce its
+font size before scanning.
+
+### macOS
+
+To import without displaying the credential, copy each profile directly to
+the clipboard and use `+` -> **Add from clipboard** in Hiddify:
+
+```bash
+pbcopy < secrets/vless-reality.txt
+```
+
+Import it, then repeat for the second profile:
+
+```bash
+pbcopy < secrets/hysteria2.txt
+```
+
+Select one of the imported profiles and click Connect. Allow Hiddify to add a
+VPN configuration or network extension if macOS requests it.
+
+### Android, Windows, or Linux
+
+The profile contents and QR codes are portable. Install Hiddify on the target
+device, then either scan each code produced by `make qr` or securely copy one
+file at a time from `secrets/` and use `+` -> **Add from clipboard**. Import
+both profiles separately and connect with one at a time.
+
+### Test and maintain the connection
+
+Test both profiles because they use different transports: REALITY uses TCP/443
+and Hysteria2 uses UDP/443. A network may permit one and filter the other. With
+the client connected, open `https://checkip.amazonaws.com` in a browser; the
+displayed address should match `vpn_ip` from:
+
+```bash
+make output
+```
+
+Every `make rotate` creates new credentials as well as a new endpoint. Remove
+the old profiles from each client and import both newly displayed QR codes.
+
+Treat the files, their clipboard contents, and their QR codes as passwords.
+Anyone who obtains one can use that profile. Do not commit them, send them over
+an untrusted channel, save QR screenshots to cloud storage, or paste them into
+an online QR-code generator. `make qr` renders them locally.
 
 ## Normal operation
 
