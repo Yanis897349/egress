@@ -12,7 +12,7 @@ help:
 	@echo "  make fetch          Atomically retrieve the current client profiles"
 	@echo "  make status         Show remote service health"
 	@echo "  make ssh            Open an SSH session"
-	@echo "  make qr             Display client profile QR codes"
+	@echo "  make qr             Display QR codes and save PNG files"
 	@echo "  make output         Show Terraform outputs"
 	@echo "  make rotate         Replace the instance and retrieve fresh profiles"
 	@echo "  make destroy        Interactively destroy managed infrastructure"

@@ -38,6 +38,9 @@ echo "Testing client URI rendering..."
 echo "Testing readiness failure and timeout handling..."
 "${ROOT_DIR}/tests/test-wait-ready.sh"
 
+echo "Testing QR display and PNG generation..."
+"${ROOT_DIR}/tests/test-qr.sh"
+
 echo "Dry-running operator workflows..."
 make -C "${ROOT_DIR}" -n deploy >/dev/null
 make -C "${ROOT_DIR}" -n rotate >/dev/null

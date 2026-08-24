@@ -18,12 +18,15 @@ remote_ssh "${IP}" '
   sudo cat /var/lib/beijing-vps/bootstrap-complete
   echo
 
-  echo "== sing-box =="
-  sudo systemctl is-active sing-box
-  sing-box version | head -n 1
+  echo "== Xray (VLESS + REALITY) =="
+  sudo systemctl is-active xray
+  /usr/local/bin/xray version | head -n 1
+  sudo /usr/local/bin/xray run -test -config /etc/xray/config.json
   echo
 
-  echo "== configuration =="
+  echo "== sing-box (Hysteria2) =="
+  sudo systemctl is-active sing-box
+  sing-box version | head -n 1
   sudo sing-box check -c /etc/sing-box/config.json
   echo
 

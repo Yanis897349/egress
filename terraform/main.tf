@@ -3,10 +3,10 @@ provider "aws" {
 }
 
 locals {
-  bootstrap_script_base64 = filebase64("${path.module}/../cloud-init/setup.sh")
+  bootstrap_script_base64_gzip = base64gzip(file("${path.module}/../cloud-init/setup.sh"))
   bootstrap_command = format(
-    "printf '%%s' '%s' | base64 -d | bash -s -- '%s'",
-    local.bootstrap_script_base64,
+    "printf '%%s' '%s' | base64 -d | gzip -d | bash -s -- '%s'",
+    local.bootstrap_script_base64_gzip,
     var.reality_sni,
   )
 }
