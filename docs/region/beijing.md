@@ -76,7 +76,7 @@ aws lightsail get-regions \
   --query 'regions[?name==`ap-northeast-1`].availabilityZones[].zoneName'
 ```
 
-The example uses the `ubuntu_24_04` blueprint, `small_3_0` bundle, and
+The example uses the `ubuntu_24_04` blueprint, `micro_3_0` bundle, and
 `ap-northeast-1a` availability zone. Replace any value that is not currently
 active or available.
 
@@ -95,7 +95,7 @@ aws_region        = "ap-northeast-1"
 availability_zone = "ap-northeast-1a"
 instance_name     = "beijing-vpn"
 blueprint_id      = "ubuntu_24_04"
-bundle_id         = "small_3_0"
+bundle_id         = "micro_3_0"
 key_pair_name     = "beijing-vps"
 reality_sni       = "www.cloudflare.com"
 ```
