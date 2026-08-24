@@ -76,6 +76,12 @@ print_remote_diagnostics() {
     >&2 || true
 
   echo >&2
+  echo "== Xray service ==" >&2
+  remote_ssh "${ip}" \
+    "sudo systemctl status xray --no-pager 2>/dev/null || true" \
+    >&2 || true
+
+  echo >&2
   echo "== sing-box service ==" >&2
   remote_ssh "${ip}" \
     "sudo systemctl status sing-box --no-pager 2>/dev/null || true" \

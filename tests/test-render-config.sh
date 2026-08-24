@@ -15,7 +15,7 @@ trap cleanup EXIT
 
 cat >"${TEST_DIR}/manifest.json" <<'EOF'
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "reality_sni": "www.microsoft.com",
   "vless_uuid": "123e4567-e89b-12d3-a456-426614174000",
   "reality_public_key": "abcdefghijklmnopqrstuvwxyzABCDEFGH123456789",
@@ -23,7 +23,8 @@ cat >"${TEST_DIR}/manifest.json" <<'EOF'
   "hysteria2_password": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
   "hysteria2_obfs_password": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
   "hysteria2_cert_sha256": "AA:BB:CC:DD:EE:FF:00:11:22:33:44:55:66:77:88:99:AA:BB:CC:DD:EE:FF:00:11:22:33:44:55:66:77:88:99",
-  "sing_box_version": "test"
+  "sing_box_version": "test",
+  "xray_version": "test"
 }
 EOF
 

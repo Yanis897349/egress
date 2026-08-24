@@ -69,7 +69,7 @@ variable "key_pair_name" {
 variable "reality_sni" {
   description = "TLS 1.3-capable hostname used as the REALITY handshake target."
   type        = string
-  default     = "www.microsoft.com"
+  default     = "www.cloudflare.com"
 
   validation {
     condition = (
