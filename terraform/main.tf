@@ -22,7 +22,7 @@ resource "aws_lightsail_instance" "vpn" {
 
   tags = {
     Role        = "personal-connectivity"
-    Environment = "exchange-year"
+    Environment = "personal"
     ManagedBy   = "terraform"
   }
 

@@ -69,7 +69,15 @@ grep -q '^ANSI:vless://test-profile$' "${TEST_DIR}/qr.log"
 grep -q '^ANSI:hysteria2://test-profile$' "${TEST_DIR}/qr.log"
 grep -q 'QR code PNG files saved:' "${TEST_DIR}/qr.log"
 
-[[ "$(stat -f '%Lp' "${TEST_DIR}/repo/secrets/vless-reality.png")" == "600" ]]
-[[ "$(stat -f '%Lp' "${TEST_DIR}/repo/secrets/hysteria2.png")" == "600" ]]
+file_mode() {
+  if stat -f '%Lp' "$1" >/dev/null 2>&1; then
+    stat -f '%Lp' "$1"
+  else
+    stat -c '%a' "$1"
+  fi
+}
+
+[[ "$(file_mode "${TEST_DIR}/repo/secrets/vless-reality.png")" == "600" ]]
+[[ "$(file_mode "${TEST_DIR}/repo/secrets/hysteria2.png")" == "600" ]]
 
 echo "QR tests passed."

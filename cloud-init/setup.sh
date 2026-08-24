@@ -247,7 +247,7 @@ jq -n \
         },
         users: [
           {
-            name: "exchange",
+            name: "egress",
             password: $hy2_password
           }
         ],
@@ -293,7 +293,7 @@ jq -n \
           clients: [
             {
               id: $uuid,
-              email: "exchange",
+              email: "egress",
               flow: "xtls-rprx-vision"
             }
           ],

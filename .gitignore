@@ -1,4 +1,12 @@
 .DS_Store
+.context/
+
+# Local editor and environment files
+.env
+.env.*
+!.env.example
+*.swp
+*~
 
 # Terraform working data and local configuration
 terraform/.terraform/
@@ -9,6 +17,12 @@ terraform/terraform.tfvars
 terraform/*.tfplan
 terraform/crash.log
 terraform/crash.*.log
+terraform/.terraformrc
+terraform/terraform.rc
+terraform/override.tf
+terraform/override.tf.json
+terraform/*_override.tf
+terraform/*_override.tf.json
 
 # Retrieved credentials and transient runtime state
 secrets/

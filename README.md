@@ -1,5 +1,7 @@
 # Egress
 
+[![CI](https://github.com/Yanis897349/egress/actions/workflows/ci.yml/badge.svg)](https://github.com/Yanis897349/egress/actions/workflows/ci.yml)
+
 Terraform automation for deploying and rotating a disposable personal
 connectivity server on AWS Lightsail. Each deployment provides:
 
@@ -16,6 +18,12 @@ make rotate
 It replaces the Lightsail instance and its firewall rules, waits for bootstrap,
 retrieves fresh client profiles atomically, checks both services, and displays
 new QR codes. The project does not create a static IP.
+
+> [!CAUTION]
+> Running this project creates billable, internet-facing AWS resources. Review
+> every Terraform plan, monitor AWS charges, secure your credentials, and use
+> the software only where permitted by applicable law, network policy, and
+> provider terms.
 
 ## Region guides
 
@@ -67,7 +75,8 @@ administrator addresses become available.
 On macOS:
 
 ```bash
-brew install terraform awscli qrencode shellcheck jq
+brew tap hashicorp/tap
+brew install hashicorp/tap/terraform awscli qrencode shellcheck jq
 ```
 
 Configure AWS credentials using a provider-supported source such as
@@ -233,6 +242,10 @@ independent recovery connection available.
 .
 ├── Makefile
 ├── README.md
+├── CONTRIBUTING.md
+├── SECURITY.md
+├── CODE_OF_CONDUCT.md
+├── LICENSE
 ├── cloud-init/
 │   └── setup.sh
 ├── docs/
@@ -259,3 +272,14 @@ independent recovery connection available.
     ├── test-render-config.sh
     └── test-wait-ready.sh
 ```
+
+## Contributing and license
+
+Contributions are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) before
+opening an issue or pull request, and report vulnerabilities according to
+[SECURITY.md](SECURITY.md). Community participation is governed by the
+[code of conduct](CODE_OF_CONDUCT.md).
+
+Egress is available under the [MIT License](LICENSE). It is provided without
+warranty; operators remain responsible for their infrastructure, costs,
+security, and compliance.
