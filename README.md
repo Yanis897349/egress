@@ -135,20 +135,21 @@ checked-in example selection and is highlighted below.
 | 12Xlarge | `12xlarge_3_0` | $1,324 | 48 | 192 GB | 1,280 GB | 10 TB |
 | 16Xlarge | `16xlarge_3_0` | $1,764 | 64 | 256 GB | 1,280 GB | 10 TB |
 
-These are AWS's published public-IPv4 monthly price ceilings and specifications
-as of August 24, 2026; usage is billed hourly up to the monthly amount. Both
-inbound and outbound traffic consume the allowance, but AWS charges overage
-only for eligible outbound traffic. In Tokyo, that overage is currently
-$0.14/GB. See the [AWS bundle table](https://docs.aws.amazon.com/lightsail/latest/userguide/amazon-lightsail-bundles.html)
+These are AWS's published public-IPv4 monthly price ceilings and specifications;
+usage is billed hourly up to the monthly amount. Both inbound and outbound
+traffic consume the allowance, but AWS charges overage only for eligible
+outbound traffic. Overage rates and some transfer allowances vary by region.
+See the [AWS bundle table](https://docs.aws.amazon.com/lightsail/latest/userguide/amazon-lightsail-bundles.html)
 and [data-transfer rules](https://docs.aws.amazon.com/lightsail/latest/userguide/amazon-lightsail-faq-data-transfer-allowance.html)
 for details.
 
 Prices, bundle availability, and specifications can change. Check the active
-Tokyo catalog before editing `bundle_id`:
+catalog in the deployment region before editing `bundle_id`:
 
 ```bash
+AWS_REGION=your-aws-region
 aws lightsail get-bundles \
-  --region ap-northeast-1 \
+  --region "${AWS_REGION}" \
   --query 'bundles[?isActive && contains(supportedPlatforms, `LINUX_UNIX`)].[bundleId,name,price,cpuCount,ramSizeInGb,diskSizeInGb,transferPerMonthInGb]' \
   --output table
 ```
