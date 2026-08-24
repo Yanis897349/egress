@@ -17,10 +17,6 @@ It replaces the Lightsail instance and its firewall rules, waits for bootstrap,
 retrieves fresh client profiles atomically, checks both services, and displays
 new QR codes. The project does not create a static IP.
 
-> Check and comply with applicable law, your university or employer network
-> policy, and AWS's acceptable-use policy. Network conditions can change, and
-> this project does not guarantee connectivity from any particular network.
-
 ## Region guides
 
 Choose a guide for the location and AWS region you want to use:
