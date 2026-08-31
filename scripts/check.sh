@@ -41,9 +41,13 @@ echo "Testing readiness failure and timeout handling..."
 echo "Testing QR display and PNG generation..."
 "${ROOT_DIR}/tests/test-qr.sh"
 
+echo "Testing monthly transfer usage reporting..."
+"${ROOT_DIR}/tests/test-usage.sh"
+
 echo "Dry-running operator workflows..."
 make -C "${ROOT_DIR}" -n deploy >/dev/null
 make -C "${ROOT_DIR}" -n rotate >/dev/null
 make -C "${ROOT_DIR}" -n destroy >/dev/null
+make -C "${ROOT_DIR}" -n usage >/dev/null
 
 echo "All checks passed."

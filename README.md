@@ -82,7 +82,9 @@ brew install hashicorp/tap/terraform awscli qrencode shellcheck jq
 Configure AWS credentials using a provider-supported source such as
 `aws configure`, AWS SSO, or `AWS_PROFILE`. The identity needs permission to
 read and manage Lightsail instances, instance public ports, and the referenced
-key pair. Do not put AWS access keys in this repository.
+key pair. Reading month-to-date transfer with `make usage` additionally
+requires the Cost Explorer `ce:GetCostAndUsage` permission. Do not put AWS
+access keys in this repository.
 
 Confirm the active identity before creating infrastructure:
 
@@ -212,12 +214,21 @@ existing PNGs atomically.
 ```bash
 make output  # Show Terraform outputs
 make status  # Show bootstrap, Xray, sing-box, listeners, UFW, and BBR
+make usage   # Show month-to-date inbound, outbound, and total transfer
 make ssh     # Open an SSH session to the current instance
 make fetch   # Atomically refresh local profiles
 make qr      # Display QR codes and save PNG copies in secrets/
 make wait    # Wait for an in-progress bootstrap
 make rotate  # Replace the instance and retrieve fresh profiles
 ```
+
+`make usage` reads the current AWS billing month, including transfer from
+instances replaced by `make rotate`. It compares the regional inbound plus
+outbound total with the current instance plan's allowance. Cost Explorer data
+is estimated during the current month and can lag behind recent traffic. If the
+AWS session has expired, reauthenticate it before running the command. It uses
+the configured AWS region (Tokyo by default); set `AWS_REGION` when checking a
+deployment in another region.
 
 The first SSH connection uses trust on first use and records the host key in
 `.runtime/known_hosts`. That file is local to the repository and is cleared

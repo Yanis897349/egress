@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-.PHONY: help init plan deploy wait fetch status ssh qr output rotate destroy clean-secrets check
+.PHONY: help init plan deploy wait fetch status usage ssh qr output rotate destroy clean-secrets check
 
 help:
 	@echo "Disposable Beijing VPS automation"
@@ -11,6 +11,7 @@ help:
 	@echo "  make wait           Wait for bootstrap completion"
 	@echo "  make fetch          Atomically retrieve the current client profiles"
 	@echo "  make status         Show remote service health"
+	@echo "  make usage          Show month-to-date Lightsail transfer usage"
 	@echo "  make ssh            Open an SSH session"
 	@echo "  make qr             Display QR codes and save PNG files"
 	@echo "  make output         Show Terraform outputs"
@@ -42,6 +43,9 @@ fetch:
 
 status:
 	./scripts/status.sh
+
+usage:
+	./scripts/usage.sh
 
 ssh:
 	./scripts/ssh.sh
