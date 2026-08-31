@@ -1,4 +1,4 @@
-bundle_id     = "micro_3_0"
+bundle_id     = "medium_3_0"
 key_pair_name = "beijing-vps"
 
 # Optional overrides:
