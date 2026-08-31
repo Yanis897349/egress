@@ -124,9 +124,9 @@ checked-in example selection and is highlighted below.
 | Plan | Bundle ID | USD/month | vCPUs | RAM | SSD | Monthly transfer |
 |---|---|---:|---:|---:|---:|---:|
 | Nano | `nano_3_0` | $5 | 2 | 0.5 GB | 20 GB | 1 TB |
-| **Micro (example)** | **`micro_3_0`** | **$7** | **2** | **1 GB** | **40 GB** | **2 TB** |
+| Micro | `micro_3_0` | $7 | 2 | 1 GB | 40 GB | 2 TB |
 | Small | `small_3_0` | $12 | 2 | 2 GB | 60 GB | 3 TB |
-| Medium | `medium_3_0` | $24 | 2 | 4 GB | 80 GB | 4 TB |
+| **Medium (example)** | **`medium_3_0`** | **$24** | **2** | **4 GB** | **80 GB** | **4 TB** |
 | Large | `large_3_0` | $44 | 2 | 8 GB | 160 GB | 5 TB |
 | Xlarge | `xlarge_3_0` | $84 | 4 | 16 GB | 320 GB | 6 TB |
 | 2Xlarge | `2xlarge_3_0` | $164 | 8 | 32 GB | 640 GB | 7 TB |
