@@ -44,6 +44,9 @@ echo "Testing QR display and PNG generation..."
 echo "Testing monthly transfer usage reporting..."
 "${ROOT_DIR}/tests/test-usage.sh"
 
+echo "Testing rotation initialization and state checks..."
+"${ROOT_DIR}/tests/test-rotate.sh"
+
 echo "Dry-running operator workflows..."
 make -C "${ROOT_DIR}" -n deploy >/dev/null
 make -C "${ROOT_DIR}" -n rotate >/dev/null

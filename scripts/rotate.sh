@@ -5,7 +5,16 @@ set -Eeuo pipefail
 source "$(dirname "${BASH_SOURCE[0]}")/common.sh"
 
 require_command terraform
-OLD_IP="$(vpn_ip)"
+terraform -chdir="${TERRAFORM_DIR}" init -input=false
+
+if ! MANAGED_RESOURCES="$(terraform -chdir="${TERRAFORM_DIR}" state list)" ||
+  [[ $'\n'"${MANAGED_RESOURCES}"$'\n' != *$'\naws_lightsail_instance.vpn\n'* ]]; then
+  die "Cannot find the existing VPS in Terraform state. If you changed worktrees, restore terraform/terraform.tfstate and terraform/terraform.tfvars from the directory that managed this VPS, or run rotation there. See README.md: Moving between worktrees."
+fi
+
+if ! OLD_IP="$(vpn_ip)" || [[ -z "${OLD_IP}" ]]; then
+  die "Cannot read the existing VPS address from Terraform state. Run 'make output' to inspect the deployment before rotating."
+fi
 
 echo "Replacing the Lightsail instance at ${OLD_IP}..."
 terraform -chdir="${TERRAFORM_DIR}" apply \

@@ -234,8 +234,9 @@ The first SSH connection uses trust on first use and records the host key in
 `.runtime/known_hosts`. That file is local to the repository and is cleared
 after an intentional instance replacement.
 
-Rotation records the old address, replaces the instance and authoritative
-Lightsail firewall resource, and waits for the new server to become healthy.
+Rotation initializes Terraform, records the old address, replaces the instance
+and authoritative Lightsail firewall resource, and waits for the new server to
+become healthy. It stops before applying if the instance is missing from state.
 The active local profiles are replaced only after the new manifest renders
 successfully. If AWS assigns the same IPv4 address, the new credentials are
 saved but the command exits with a warning; rotate again if a different address
@@ -265,6 +266,46 @@ deployment, verify in the Lightsail console that no unmanaged instance or
 static IP remains.
 
 ## Troubleshooting
+
+### Moving between worktrees
+
+Git worktrees do not carry over ignored files. The provider cache
+(`terraform/.terraform/`), deployment state (`terraform/terraform.tfstate`), and
+configuration (`terraform/terraform.tfvars`) are local to each checkout.
+
+For a `Required plugins are not installed` error, run this from the repository
+root:
+
+```bash
+make init
+```
+
+This downloads the providers selected in the lock file without replacing the
+VPS. `make rotate` also initializes Terraform automatically.
+
+Initialization does not recover the existing deployment's state. The simplest
+way to manage that VPS is to run commands in the original checkout. To move its
+management to a new worktree, first stop Terraform operations in the old one,
+then copy its `terraform/terraform.tfstate` and `terraform/terraform.tfvars`
+into the new worktree's `terraform/` directory. Preserve a backup of the state,
+avoid overwriting another deployment's files, and use only the new worktree for
+subsequent operations so the state copies do not diverge. Keep using the same
+SSH private key (set `SSH_KEY` if needed).
+
+After restoring those files, verify the deployment before rotating:
+
+```bash
+make init
+make output
+make plan
+make rotate
+```
+
+If the original state is missing, recover it from a backup or import the
+existing resources before applying. Running `make deploy` with empty state
+does not reconnect Terraform to the existing VPS.
+
+### Service readiness
 
 Start with:
 
