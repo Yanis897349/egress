@@ -319,6 +319,13 @@ and prints the bootstrap log and both service statuses whenever SSH is
 available. The selected [region guide](#region-guides) contains the concrete
 log path and manual diagnostic commands for that deployment.
 
+Bootstrap waits for both services to be active and for Xray TCP/443 and
+sing-box UDP/443 to listen before checking REALITY end to end. An active
+systemd service can still be starting its listener. If the listeners do not
+become ready within 20 attempts (one second apart), bootstrap logs the service
+and socket status. Trapped failures include the script line and exit code in
+both the bootstrap log and failure marker.
+
 Common causes of deployment failure are an inactive bundle or blueprint, a
 missing regional key pair, a mismatched local private key, an unsuitable
 REALITY target, insufficient AWS permissions, or TCP/22 filtering on the

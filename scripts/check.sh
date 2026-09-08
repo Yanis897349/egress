@@ -38,6 +38,9 @@ echo "Testing client URI rendering..."
 echo "Testing readiness failure and timeout handling..."
 "${ROOT_DIR}/tests/test-wait-ready.sh"
 
+echo "Testing bootstrap listener readiness..."
+"${ROOT_DIR}/tests/test-bootstrap-readiness.sh"
+
 echo "Testing QR display and PNG generation..."
 "${ROOT_DIR}/tests/test-qr.sh"
 

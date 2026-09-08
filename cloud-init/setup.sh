@@ -34,14 +34,15 @@ exec > >(tee -a "${LOG_FILE}") 2>&1
 
 mark_failed() {
   local exit_code=$?
+  local line=$1
   trap - ERR
-  printf 'Bootstrap failed with exit code %s at %s\n' \
-    "${exit_code}" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-    >"${FAILED_MARKER}"
+  printf 'Bootstrap failed with exit code %s at line %s at %s\n' \
+    "${exit_code}" "${line}" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+    | tee "${FAILED_MARKER}" >&2
   chmod 0644 "${FAILED_MARKER}"
   exit "${exit_code}"
 }
-trap mark_failed ERR
+trap 'mark_failed "${LINENO}"' ERR
 
 if [[ -f "${COMPLETE_MARKER}" ]]; then
   echo "Bootstrap already completed."
@@ -360,18 +361,25 @@ systemctl enable xray
 systemctl restart sing-box
 systemctl restart xray
 
+echo "Waiting for Xray TCP/443 and sing-box UDP/443 listeners..."
+LISTENERS_READY=false
 for _attempt in {1..20}; do
   if systemctl is-active --quiet sing-box && \
-    systemctl is-active --quiet xray; then
+    systemctl is-active --quiet xray && \
+    ss -H -lntp | awk '$4 ~ /:443$/ && /xray/ { found = 1 } END { exit !found }' && \
+    ss -H -lnup | awk '$4 ~ /:443$/ && /sing-box/ { found = 1 } END { exit !found }'; then
+    LISTENERS_READY=true
     break
   fi
   sleep 1
 done
 
-systemctl is-active --quiet sing-box
-systemctl is-active --quiet xray
-ss -H -lntp | awk '$4 ~ /:443$/ && /xray/ { found = 1 } END { exit !found }'
-ss -H -lnup | awk '$4 ~ /:443$/ && /sing-box/ { found = 1 } END { exit !found }'
+if [[ "${LISTENERS_READY}" != true ]]; then
+  echo "Timed out waiting for Xray TCP/443 and sing-box UDP/443 listeners." >&2
+  systemctl status xray sing-box --no-pager || true
+  ss -H -lntup || true
+  false # Trigger the ERR trap and record bootstrap failure.
+fi
 
 echo "Checking VLESS + REALITY end to end with a sing-box client..."
 jq -n \
