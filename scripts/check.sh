@@ -35,6 +35,9 @@ terraform -chdir="${TERRAFORM_DIR}" validate
 echo "Testing client URI rendering..."
 "${ROOT_DIR}/tests/test-render-config.sh"
 
+echo "Testing deployed-region profile retrieval..."
+"${ROOT_DIR}/tests/test-fetch-config.sh"
+
 echo "Testing readiness failure and timeout handling..."
 "${ROOT_DIR}/tests/test-wait-ready.sh"
 

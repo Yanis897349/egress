@@ -27,9 +27,11 @@ new QR codes. The project does not create a static IP.
 
 ## Region guides
 
-Choose a guide for the location and AWS region you want to use:
+The checked-in setup targets Hong Kong and uses the Micro bundle. Choose a
+guide for the AWS region you want to use:
 
-- [Beijing via AWS Tokyo](docs/region/beijing.md)
+- [Hong Kong (default), including migration from Tokyo](docs/region/hong-kong.md)
+- [Tokyo (explicit regional overrides)](docs/region/tokyo.md)
 
 The guide contains the region, availability zone, instance name, SSH key,
 Lightsail bundle, client names, and troubleshooting details for that deployment.
@@ -59,6 +61,13 @@ Locally retrieved profiles are stored as:
 secrets/vless-reality.txt
 secrets/hysteria2.txt
 ```
+
+Profile display names follow the deployed instance's AWS region, for example
+`Hong Kong-REALITY` / `Hong Kong-HY2` or `Tokyo-REALITY` / `Tokyo-HY2`.
+Unrecognized regions use their AWS region code. The region comes from Terraform
+state, independently of your AWS CLI default region. Run `make fetch` followed
+by `make qr` to regenerate profiles for an existing deployment, then reimport
+them into your client.
 
 The directory is mode `0700` and each file is mode `0600`. It, Terraform state,
 local tfvars, staging directories, runtime SSH host keys, and private key files
@@ -98,11 +107,22 @@ in `terraform/terraform.tfvars`.
 
 ## Configuration
 
-Copy the example configuration:
+For a new deployment, copy the Hong Kong example configuration:
 
 ```bash
 cp terraform/terraform.tfvars.example terraform/terraform.tfvars
 ```
+
+The example uses `micro_3_0`, Ubuntu 24.04, and the existing `beijing-vps`
+SSH key name. Hong Kong must be enabled in your account, and the key must be
+imported there. Verify the example availability zone before deployment using
+the [Hong Kong guide](docs/region/hong-kong.md).
+
+If this checkout already manages Tokyo, follow the
+[migration steps](docs/region/hong-kong.md#replace-tokyo-in-the-same-workspace)
+before replacing its configuration. Older local tfvars may omit the region,
+zone, and instance name and therefore inherit these new Hong Kong defaults.
+Make the Tokyo values explicit while managing or destroying that deployment.
 
 The configuration accepts these settings:
 
@@ -121,25 +141,27 @@ The configuration accepts these settings:
 This project uses Linux/Unix Lightsail bundles with a public IPv4 address. The
 following table lists every general-purpose size, from Nano through 16Xlarge;
 set its bundle ID as `bundle_id` in `terraform/terraform.tfvars`. Micro is the
-checked-in example selection and is highlighted below.
+checked-in example selection and is highlighted below. Transfer allowances
+shown here are for Hong Kong.
 
-| Plan | Bundle ID | USD/month | vCPUs | RAM | SSD | Monthly transfer |
+| Plan | Bundle ID | USD/month | vCPUs | RAM | SSD | Hong Kong monthly transfer |
 |---|---|---:|---:|---:|---:|---:|
-| Nano | `nano_3_0` | $5 | 2 | 0.5 GB | 20 GB | 1 TB |
-| Micro | `micro_3_0` | $7 | 2 | 1 GB | 40 GB | 2 TB |
-| Small | `small_3_0` | $12 | 2 | 2 GB | 60 GB | 3 TB |
-| **Medium (example)** | **`medium_3_0`** | **$24** | **2** | **4 GB** | **80 GB** | **4 TB** |
-| Large | `large_3_0` | $44 | 2 | 8 GB | 160 GB | 5 TB |
-| Xlarge | `xlarge_3_0` | $84 | 4 | 16 GB | 320 GB | 6 TB |
-| 2Xlarge | `2xlarge_3_0` | $164 | 8 | 32 GB | 640 GB | 7 TB |
-| 4Xlarge | `4xlarge_3_0` | $384 | 16 | 64 GB | 1,280 GB | 8 TB |
-| 8Xlarge | `8xlarge_3_0` | $884 | 32 | 128 GB | 1,280 GB | 9 TB |
-| 12Xlarge | `12xlarge_3_0` | $1,324 | 48 | 192 GB | 1,280 GB | 10 TB |
-| 16Xlarge | `16xlarge_3_0` | $1,764 | 64 | 256 GB | 1,280 GB | 10 TB |
+| Nano | `nano_3_0` | $5 | 2 | 0.5 GB | 20 GB | 0.5 TB |
+| **Micro (example)** | **`micro_3_0`** | **$7** | **2** | **1 GB** | **40 GB** | **1 TB** |
+| Small | `small_3_0` | $12 | 2 | 2 GB | 60 GB | 1.5 TB |
+| Medium | `medium_3_0` | $24 | 2 | 4 GB | 80 GB | 2 TB |
+| Large | `large_3_0` | $44 | 2 | 8 GB | 160 GB | 2.5 TB |
+| Xlarge | `xlarge_3_0` | $84 | 4 | 16 GB | 320 GB | 3 TB |
+| 2Xlarge | `2xlarge_3_0` | $164 | 8 | 32 GB | 640 GB | 3.5 TB |
+| 4Xlarge | `4xlarge_3_0` | $384 | 16 | 64 GB | 1,280 GB | 4 TB |
+| 8Xlarge | `8xlarge_3_0` | $884 | 32 | 128 GB | 1,280 GB | 4.5 TB |
+| 12Xlarge | `12xlarge_3_0` | $1,324 | 48 | 192 GB | 1,280 GB | 5 TB |
+| 16Xlarge | `16xlarge_3_0` | $1,764 | 64 | 256 GB | 1,280 GB | 5 TB |
 
 These are AWS's published public-IPv4 monthly price ceilings and specifications;
-usage is billed hourly up to the monthly amount. Both inbound and outbound
-traffic consume the allowance, but AWS charges overage only for eligible
+usage is billed hourly up to the monthly amount. The table already includes
+Hong Kong's halved transfer allowances; Tokyo includes twice these allowances.
+Both inbound and outbound traffic consume the allowance, but AWS charges overage only for eligible
 outbound traffic. Overage rates and some transfer allowances vary by region.
 See the [AWS bundle table](https://docs.aws.amazon.com/lightsail/latest/userguide/amazon-lightsail-bundles.html)
 and [data-transfer rules](https://docs.aws.amazon.com/lightsail/latest/userguide/amazon-lightsail-faq-data-transfer-allowance.html)
@@ -149,17 +171,16 @@ Prices, bundle availability, and specifications can change. Check the active
 catalog in the deployment region before editing `bundle_id`:
 
 ```bash
-AWS_REGION=your-aws-region
 aws lightsail get-bundles \
-  --region "${AWS_REGION}" \
-  --query 'bundles[?isActive && contains(supportedPlatforms, `LINUX_UNIX`)].[bundleId,name,price,cpuCount,ramSizeInGb,diskSizeInGb,transferPerMonthInGb]' \
+  --region ap-east-1 \
+  --query 'bundles[?isActive && contains(supportedPlatforms, `LINUX_UNIX`) && publicIpv4AddressCount==`1`].[bundleId,name,price,cpuCount,ramSizeInGb,diskSizeInGb,transferPerMonthInGb]' \
   --output table
 ```
 
 `bundle_id` and `key_pair_name` are required. The checked-in example and
-Terraform defaults correspond to the currently supported regional profile;
-use its [region guide](docs/region/beijing.md) for the exact values and
-verification commands.
+Terraform defaults correspond to Hong Kong; use the
+[Hong Kong guide](docs/region/hong-kong.md) for verification commands or the
+[Tokyo guide](docs/region/tokyo.md) for explicit regional overrides.
 
 The REALITY target must be a DNS hostname reachable from the VPS that accepts a
 compatible TLS 1.3 handshake on port 443. Bootstrap performs both a direct TLS
@@ -214,7 +235,7 @@ existing PNGs atomically.
 ```bash
 make output  # Show Terraform outputs
 make status  # Show bootstrap, Xray, sing-box, listeners, UFW, and BBR
-make usage   # Show month-to-date inbound, outbound, and total transfer
+AWS_REGION=ap-east-1 make usage  # Show Hong Kong month-to-date transfer
 make ssh     # Open an SSH session to the current instance
 make fetch   # Atomically refresh local profiles
 make qr      # Display QR codes and save PNG copies in secrets/
@@ -227,8 +248,9 @@ instances replaced by `make rotate`. It compares the regional inbound plus
 outbound total with the current instance plan's allowance. Cost Explorer data
 is estimated during the current month and can lag behind recent traffic. If the
 AWS session has expired, reauthenticate it before running the command. It uses
-the configured AWS region (Tokyo by default); set `AWS_REGION` when checking a
-deployment in another region.
+the AWS CLI/environment region, falling back to Hong Kong when none is set.
+Use `AWS_REGION=ap-east-1 make usage` to select Hong Kong explicitly if your
+AWS CLI still defaults to Tokyo.
 
 The first SSH connection uses trust on first use and records the host key in
 `.runtime/known_hosts`. That file is local to the repository and is cleared
@@ -349,7 +371,8 @@ independent recovery connection available.
 │   └── setup.sh
 ├── docs/
 │   └── region/
-│       └── beijing.md
+│       ├── hong-kong.md
+│       └── tokyo.md
 ├── scripts/
 │   ├── check.sh
 │   ├── common.sh

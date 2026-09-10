@@ -1,9 +1,16 @@
-# Beijing deployment via AWS Tokyo
+# Tokyo deployment
 
-This guide configures Egress for use from Beijing with an AWS Lightsail
-instance in Tokyo (`ap-northeast-1`). Tokyo is the checked-in deployment
-profile, not a guarantee of connectivity or performance from every Beijing
-network.
+This guide configures Egress with an AWS Lightsail instance in Tokyo
+(`ap-northeast-1`). Set the explicit Tokyo values below because the repository
+defaults target Hong Kong. Test connectivity from the networks where you will
+use it, including when connecting from Beijing.
+
+The existing instance name (`beijing-vpn`), SSH key (`beijing-vps`), and bootstrap
+log path retain their original names to match the deployed infrastructure and
+scripts. The generated client profiles are named `Tokyo-REALITY` and `Tokyo-HY2`.
+
+To replace Tokyo with Hong Kong in the same workspace, follow the
+[Hong Kong migration instructions](hong-kong.md#replace-tokyo-in-the-same-workspace).
 
 Read the repository's [architecture, security model, and general
 workflow](../../README.md) before deploying.
@@ -65,45 +72,44 @@ aws lightsail get-blueprints \
 
 aws lightsail get-bundles \
   --region ap-northeast-1 \
-  --query 'bundles[].[bundleId,name,price,supportedPlatforms]'
+  --query 'bundles[?isActive && contains(supportedPlatforms, `LINUX_UNIX`) && publicIpv4AddressCount==`1`].{ID:bundleId,USD:price,CPU:cpuCount,RAM_GB:ramSizeInGb,SSD_GB:diskSizeInGb,Transfer_GB:transferPerMonthInGb}' \
+  --output table
 ```
 
 Confirm the intended availability zone is listed:
 
 ```bash
 aws lightsail get-regions \
+  --region ap-northeast-1 \
   --include-availability-zones \
   --query 'regions[?name==`ap-northeast-1`].availabilityZones[].zoneName'
 ```
 
-The example uses the `ubuntu_24_04` blueprint, `medium_3_0` bundle, and
+The example uses the `ubuntu_24_04` blueprint, `micro_3_0` bundle, and
 `ap-northeast-1a` availability zone. Replace any value that is not currently
 active or available.
 
-## Configure the Beijing deployment
+## Configure the Tokyo deployment
 
-Copy the example:
-
-```bash
-cp terraform/terraform.tfvars.example terraform/terraform.tfvars
-```
-
-Use these values:
+Set these values in `terraform/terraform.tfvars` for Tokyo. For an existing
+deployment, keep its actual bundle, name, and key; explicitly set its region
+and zone rather than relying on the repository's Hong Kong defaults:
 
 ```hcl
 aws_region        = "ap-northeast-1"
 availability_zone = "ap-northeast-1a"
 instance_name     = "beijing-vpn"
 blueprint_id      = "ubuntu_24_04"
-bundle_id         = "medium_3_0"
+bundle_id         = "micro_3_0"
 key_pair_name     = "beijing-vps"
 reality_sni       = "www.cloudflare.com"
 ```
 
-The region, availability zone, instance name, blueprint, and REALITY target
-already match the Terraform defaults. They are shown explicitly here so the
-regional profile is easy to review. `bundle_id` and `key_pair_name` are
-required.
+These values preserve the original Tokyo deployment's Micro size and resource
+names. The region, zone, and instance name override the Hong Kong defaults.
+`bundle_id` and `key_pair_name` are required. Micro includes 2 TB of monthly
+transfer in Tokyo, compared with 1 TB in Hong Kong; see
+[AWS regional allowances](https://aws.amazon.com/lightsail/pricing/).
 
 The tested REALITY target is `www.cloudflare.com`. Bootstrap checks both its
 direct TLS 1.3 handshake and an end-to-end request through the REALITY proxy.
@@ -209,7 +215,7 @@ Install Hiddify on the target device, then scan each code produced by `make qr`
 or securely copy one file at a time from `secrets/` and use `+` -> **Add from
 clipboard**. Import the profiles separately and connect with one at a time.
 
-### Test the Beijing connection
+### Test the Tokyo connection
 
 Test both profiles because they use different transports. A network may permit
 one and filter the other. With the client connected, open
@@ -228,7 +234,7 @@ Treat the profile files and QR codes like passwords. Do not commit them, copy
 them through an untrusted channel, save QR screenshots to cloud storage, or
 paste them into an online QR generator.
 
-## Beijing deployment troubleshooting
+## Tokyo deployment troubleshooting
 
 The bootstrap log for this profile is
 `/var/log/beijing-vps-bootstrap.log`. The readiness workflow prints its tail

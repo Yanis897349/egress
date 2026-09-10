@@ -3,7 +3,7 @@ SHELL := /bin/bash
 .PHONY: help init plan deploy wait fetch status usage ssh qr output rotate destroy clean-secrets check
 
 help:
-	@echo "Disposable Beijing VPS automation"
+	@echo "Disposable connectivity VPS automation (Hong Kong defaults)"
 	@echo
 	@echo "  make init           Initialize Terraform"
 	@echo "  make plan           Review the Terraform plan"
