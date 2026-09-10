@@ -2,7 +2,7 @@
 
 This guide configures Egress with an AWS Lightsail instance in Tokyo
 (`ap-northeast-1`). Set the explicit Tokyo values below because the repository
-defaults target Hong Kong. Test connectivity from the networks where you will
+defaults target Seoul. Test connectivity from the networks where you will
 use it, including when connecting from Beijing.
 
 The existing instance name (`beijing-vpn`), SSH key (`beijing-vps`), and bootstrap
@@ -93,7 +93,7 @@ active or available.
 
 Set these values in `terraform/terraform.tfvars` for Tokyo. For an existing
 deployment, keep its actual bundle, name, and key; explicitly set its region
-and zone rather than relying on the repository's Hong Kong defaults:
+and zone rather than relying on the repository's Seoul defaults:
 
 ```hcl
 aws_region        = "ap-northeast-1"
@@ -106,7 +106,7 @@ reality_sni       = "www.cloudflare.com"
 ```
 
 These values preserve the original Tokyo deployment's Micro size and resource
-names. The region, zone, and instance name override the Hong Kong defaults.
+names. The region, zone, and instance name override the Seoul defaults.
 `bundle_id` and `key_pair_name` are required. Micro includes 2 TB of monthly
 transfer in Tokyo, compared with 1 TB in Hong Kong; see
 [AWS regional allowances](https://aws.amazon.com/lightsail/pricing/).

@@ -50,7 +50,7 @@ grep -q 'pinSHA256=AA%3ABB%3ACC' "${HY2_FILE}"
 grep -q '#Tokyo-REALITY$' "${VLESS_FILE}"
 grep -q '#Tokyo-HY2$' "${HY2_FILE}"
 
-for region_and_label in 'ap-east-1 Hong%20Kong' 'ap-southeast-1 Singapore' 'sa-east-1 S%C3%A3o%20Paulo' 'ap-southeast-99 ap-southeast-99'; do
+for region_and_label in 'ap-northeast-2 Seoul' 'ap-east-1 Hong%20Kong' 'ap-southeast-1 Singapore' 'sa-east-1 S%C3%A3o%20Paulo' 'ap-southeast-99 ap-southeast-99'; do
   read -r region label <<<"${region_and_label}"
   "${ROOT_DIR}/scripts/render-config.sh" \
     "${TEST_DIR}/manifest.json" "203.0.113.10" "${TEST_DIR}/regional" "${region}"

@@ -1,9 +1,13 @@
 # Hong Kong deployment
 
 This guide configures Egress with an AWS Lightsail instance in Hong Kong
-(`ap-east-1`), the repository's default region. The checked-in example uses
-the Micro bundle (`micro_3_1`) and Ubuntu 24.04. Generated profiles are named `Hong Kong-REALITY` and
+(`ap-east-1`). The repository defaults now target Seoul; use the explicit
+Hong Kong configuration below. This guide uses the Micro bundle (`micro_3_1`)
+and Ubuntu 24.04. Generated profiles are named `Hong Kong-REALITY` and
 `Hong Kong-HY2`, using the deployed instance's region from Terraform state.
+
+To migrate the current Hong Kong deployment to Seoul, follow the
+[Seoul migration guide](seoul.md#replace-hong-kong-in-the-same-workspace).
 
 Read the [general workflow and prerequisites](../../README.md) first. If this
 workspace already manages Tokyo, follow
@@ -92,9 +96,8 @@ that reduction. Check the live catalog above before deployment.
 Sources: [AWS bundle specifications](https://docs.aws.amazon.com/lightsail/latest/userguide/amazon-lightsail-bundles.html)
 and [regional pricing allowances](https://aws.amazon.com/lightsail/pricing/).
 
-`micro_3_1` matches the checked-in example and retains the original Tokyo
-deployment's size. Hong Kong uses different bundle IDs from Tokyo: its Micro
-IPv4 bundle is `micro_3_1`, while Tokyo uses `micro_3_0`. `small_3_1` and
+`micro_3_1` retains the original Tokyo deployment's size. Hong Kong uses
+different bundle IDs from Tokyo: its Micro IPv4 bundle is `micro_3_1`, while Tokyo uses `micro_3_0`. `small_3_1` and
 `medium_3_1` offer more memory and transfer if needed.
 
 Both inbound and outbound traffic consume the allowance. A proxied download
@@ -158,8 +161,8 @@ reality_sni       = "www.cloudflare.com"
 ```
 
 Replace `ap-east-1a` with a zone confirmed by the catalog command. Confirm the
-blueprint and bundle as well. These values match the repository's Hong Kong
-example and defaults. Keep using the bootstrap-tested REALITY target unless you have
+blueprint and bundle as well. These explicit values override the repository's
+Seoul defaults. Keep using the bootstrap-tested REALITY target unless you have
 validated an alternative.
 
 ## Replace Tokyo in the same workspace
@@ -171,7 +174,7 @@ bringing Hong Kong online.
 
 1. Complete Hong Kong activation, catalog checks, and SSH key import above.
    Keep managing Tokyo with its actual deployed settings while doing those
-   checks. The repository now defaults to Hong Kong, so older tfvars containing
+   checks. The repository now defaults to Seoul, so older tfvars containing
    only `bundle_id` and `key_pair_name` no longer fully describe Tokyo. Before
    any Terraform operation, explicitly set these Tokyo values in the existing
    `terraform/terraform.tfvars`, retaining its actual bundle and key:

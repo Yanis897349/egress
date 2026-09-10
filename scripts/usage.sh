@@ -54,7 +54,7 @@ aws_region=${AWS_REGION:-${AWS_DEFAULT_REGION:-}}
 if [[ -z "${aws_region}" ]]; then
   aws_region=$(aws configure get region || true)
 fi
-aws_region=${aws_region:-ap-east-1}
+aws_region=${aws_region:-ap-northeast-2}
 
 instances_json=""
 if ! instances_json=$(aws lightsail get-instances --region "${aws_region}" --output json); then
