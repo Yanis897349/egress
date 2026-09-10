@@ -2,7 +2,7 @@
 
 This guide configures Egress with an AWS Lightsail instance in Hong Kong
 (`ap-east-1`), the repository's default region. The checked-in example uses
-the Micro bundle (`micro_3_0`) and Ubuntu 24.04. Generated profiles are named `Hong Kong-REALITY` and
+the Micro bundle (`micro_3_1`) and Ubuntu 24.04. Generated profiles are named `Hong Kong-REALITY` and
 `Hong Kong-HY2`, using the deployed instance's region from Terraform state.
 
 Read the [general workflow and prerequisites](../../README.md) first. If this
@@ -77,24 +77,25 @@ that reduction. Check the live catalog above before deployment.
 
 | Bundle ID | USD/month | vCPUs | RAM | SSD | Hong Kong transfer/month |
 |---|---:|---:|---:|---:|---:|
-| `nano_3_0` | $5 | 2 | 0.5 GB | 20 GB | 0.5 TB |
-| **`micro_3_0` (example)** | **$7** | **2** | **1 GB** | **40 GB** | **1 TB** |
-| `small_3_0` | $12 | 2 | 2 GB | 60 GB | 1.5 TB |
-| `medium_3_0` | $24 | 2 | 4 GB | 80 GB | 2 TB |
-| `large_3_0` | $44 | 2 | 8 GB | 160 GB | 2.5 TB |
-| `xlarge_3_0` | $84 | 4 | 16 GB | 320 GB | 3 TB |
-| `2xlarge_3_0` | $164 | 8 | 32 GB | 640 GB | 3.5 TB |
-| `4xlarge_3_0` | $384 | 16 | 64 GB | 1,280 GB | 4 TB |
-| `8xlarge_3_0` | $884 | 32 | 128 GB | 1,280 GB | 4.5 TB |
-| `12xlarge_3_0` | $1,324 | 48 | 192 GB | 1,280 GB | 5 TB |
-| `16xlarge_3_0` | $1,764 | 64 | 256 GB | 1,280 GB | 5 TB |
+| `nano_3_1` | $5 | 2 | 0.5 GB | 20 GB | 0.5 TB |
+| **`micro_3_1` (example)** | **$7** | **2** | **1 GB** | **40 GB** | **1 TB** |
+| `small_3_1` | $12 | 2 | 2 GB | 60 GB | 1.5 TB |
+| `medium_3_1` | $24 | 2 | 4 GB | 80 GB | 2 TB |
+| `large_3_1` | $44 | 2 | 8 GB | 160 GB | 2.5 TB |
+| `xlarge_3_1` | $84 | 4 | 16 GB | 320 GB | 3 TB |
+| `2xlarge_3_1` | $164 | 8 | 32 GB | 640 GB | 3.5 TB |
+| `4xlarge_3_1` | $384 | 16 | 64 GB | 1,280 GB | 4 TB |
+| `8xlarge_3_1` | $884 | 32 | 128 GB | 1,280 GB | 4.5 TB |
+| `12xlarge_3_1` | $1,324 | 48 | 192 GB | 1,280 GB | 5 TB |
+| `16xlarge_3_1` | $1,764 | 64 | 256 GB | 1,280 GB | 5 TB |
 
 Sources: [AWS bundle specifications](https://docs.aws.amazon.com/lightsail/latest/userguide/amazon-lightsail-bundles.html)
 and [regional pricing allowances](https://aws.amazon.com/lightsail/pricing/).
 
-`micro_3_0` matches the checked-in example and retains the original Tokyo
-deployment's size. `small_3_0` and `medium_3_0` offer more memory and transfer
-if needed.
+`micro_3_1` matches the checked-in example and retains the original Tokyo
+deployment's size. Hong Kong uses different bundle IDs from Tokyo: its Micro
+IPv4 bundle is `micro_3_1`, while Tokyo uses `micro_3_0`. `small_3_1` and
+`medium_3_1` offer more memory and transfer if needed.
 
 Both inbound and outbound traffic consume the allowance. A proxied download
 enters and leaves the server, so budget roughly twice the downloaded data.
@@ -118,8 +119,15 @@ If the matching key is absent, import it:
 aws lightsail import-key-pair \
   --region ap-east-1 \
   --key-pair-name beijing-vps \
-  --public-key-base64 fileb://"$HOME/.ssh/beijing-vps.pub"
+  --public-key-base64 "file://$HOME/.ssh/beijing-vps.pub"
 ```
+
+Pass the original OpenSSH public key text (`ssh-rsa AAAA... comment`) using
+`file://`. Despite the argument name, do not base64-encode the entire file:
+that produces an invalid key format. `fileb://` supplies bytes and fails CLI
+validation for this string argument. The [Terraform AWS provider's import
+implementation](https://github.com/hashicorp/terraform-provider-aws/blob/v6.63.0/internal/service/lightsail/key_pair.go#L141)
+also passes the public key text directly to `PublicKeyBase64`.
 
 For a new installation without a local key, follow the
 [key creation instructions](tokyo.md#ssh-key-and-lightsail-key-pair) first,
@@ -144,7 +152,7 @@ aws_region        = "ap-east-1"
 availability_zone = "ap-east-1a"
 instance_name     = "hongkong-vpn"
 blueprint_id      = "ubuntu_24_04"
-bundle_id         = "micro_3_0"
+bundle_id         = "micro_3_1"
 key_pair_name     = "beijing-vps"
 reality_sni       = "www.cloudflare.com"
 ```
@@ -256,6 +264,12 @@ For an existing deployment that only needs updated display names, run
 The usage script uses AWS CLI/environment region settings, so specify
 `AWS_REGION=ap-east-1` even when your default is Tokyo. Profile naming instead
 reads the deployed instance's region from Terraform state.
+
+If creation fails with `The specified bundle does not exist in this region`,
+rerun the regional `get-bundles` command above and update `bundle_id` in your
+local `terraform/terraform.tfvars`. For Hong Kong Micro with public IPv4, use
+`micro_3_1`. Updating the checked-in example does not update an existing local
+tfvars file. Run `make plan`, review it, then retry `make deploy`.
 
 If Hong Kong API calls return `UnrecognizedClientException`, verify your AWS
 login and confirm the region status is `ENABLED`. Empty zone results can also

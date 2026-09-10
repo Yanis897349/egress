@@ -113,7 +113,7 @@ For a new deployment, copy the Hong Kong example configuration:
 cp terraform/terraform.tfvars.example terraform/terraform.tfvars
 ```
 
-The example uses `micro_3_0`, Ubuntu 24.04, and the existing `beijing-vps`
+The example uses `micro_3_1`, Ubuntu 24.04, and the existing `beijing-vps`
 SSH key name. Hong Kong must be enabled in your account, and the key must be
 imported there. Verify the example availability zone before deployment using
 the [Hong Kong guide](docs/region/hong-kong.md).
@@ -146,17 +146,17 @@ shown here are for Hong Kong.
 
 | Plan | Bundle ID | USD/month | vCPUs | RAM | SSD | Hong Kong monthly transfer |
 |---|---|---:|---:|---:|---:|---:|
-| Nano | `nano_3_0` | $5 | 2 | 0.5 GB | 20 GB | 0.5 TB |
-| **Micro (example)** | **`micro_3_0`** | **$7** | **2** | **1 GB** | **40 GB** | **1 TB** |
-| Small | `small_3_0` | $12 | 2 | 2 GB | 60 GB | 1.5 TB |
-| Medium | `medium_3_0` | $24 | 2 | 4 GB | 80 GB | 2 TB |
-| Large | `large_3_0` | $44 | 2 | 8 GB | 160 GB | 2.5 TB |
-| Xlarge | `xlarge_3_0` | $84 | 4 | 16 GB | 320 GB | 3 TB |
-| 2Xlarge | `2xlarge_3_0` | $164 | 8 | 32 GB | 640 GB | 3.5 TB |
-| 4Xlarge | `4xlarge_3_0` | $384 | 16 | 64 GB | 1,280 GB | 4 TB |
-| 8Xlarge | `8xlarge_3_0` | $884 | 32 | 128 GB | 1,280 GB | 4.5 TB |
-| 12Xlarge | `12xlarge_3_0` | $1,324 | 48 | 192 GB | 1,280 GB | 5 TB |
-| 16Xlarge | `16xlarge_3_0` | $1,764 | 64 | 256 GB | 1,280 GB | 5 TB |
+| Nano | `nano_3_1` | $5 | 2 | 0.5 GB | 20 GB | 0.5 TB |
+| **Micro (example)** | **`micro_3_1`** | **$7** | **2** | **1 GB** | **40 GB** | **1 TB** |
+| Small | `small_3_1` | $12 | 2 | 2 GB | 60 GB | 1.5 TB |
+| Medium | `medium_3_1` | $24 | 2 | 4 GB | 80 GB | 2 TB |
+| Large | `large_3_1` | $44 | 2 | 8 GB | 160 GB | 2.5 TB |
+| Xlarge | `xlarge_3_1` | $84 | 4 | 16 GB | 320 GB | 3 TB |
+| 2Xlarge | `2xlarge_3_1` | $164 | 8 | 32 GB | 640 GB | 3.5 TB |
+| 4Xlarge | `4xlarge_3_1` | $384 | 16 | 64 GB | 1,280 GB | 4 TB |
+| 8Xlarge | `8xlarge_3_1` | $884 | 32 | 128 GB | 1,280 GB | 4.5 TB |
+| 12Xlarge | `12xlarge_3_1` | $1,324 | 48 | 192 GB | 1,280 GB | 5 TB |
+| 16Xlarge | `16xlarge_3_1` | $1,764 | 64 | 256 GB | 1,280 GB | 5 TB |
 
 These are AWS's published public-IPv4 monthly price ceilings and specifications;
 usage is billed hourly up to the monthly amount. The table already includes
