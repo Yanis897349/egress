@@ -47,7 +47,7 @@ cat "${MOCK_MANIFEST}"
 EOF
 chmod +x "${TEST_DIR}/bin/terraform" "${TEST_DIR}/bin/ssh"
 
-for scenario in 'ap-east-1a Hong%20Kong' 'ap-northeast-1a Tokyo' 'missing invalid' 'failure invalid'; do
+for scenario in 'ap-northeast-2a Seoul' 'ap-east-1a Hong%20Kong' 'ap-northeast-1a Tokyo' 'missing invalid' 'failure invalid'; do
   read -r zone label <<<"${scenario}"
   mkdir -p "${TEST_DIR}/repo/secrets"
   printf 'keep-me\n' >"${TEST_DIR}/repo/secrets/sentinel"

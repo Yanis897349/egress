@@ -11,6 +11,7 @@ readonly RUNTIME_DIR="${ROOT_DIR}/.runtime"
 readonly KNOWN_HOSTS_FILE="${RUNTIME_DIR}/known_hosts"
 export SECRETS_DIR
 
+# Reuse the historical private key; Seoul imports its public half as seoul-vps.
 SSH_KEY="${SSH_KEY:-${HOME}/.ssh/beijing-vps}"
 WAIT_TIMEOUT_SECONDS="${WAIT_TIMEOUT_SECONDS:-900}"
 POLL_INTERVAL_SECONDS="${POLL_INTERVAL_SECONDS:-5}"

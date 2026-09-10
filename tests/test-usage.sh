@@ -31,7 +31,7 @@ elif [[ "${arguments}" == "lightsail get-instances "* ]]; then
   "instances": [
     {
       "name": "${MOCK_INSTANCE}",
-      "bundleId": "micro_3_0",
+      "bundleId": "${MOCK_BUNDLE}",
       "tags": [
         {"key": "Role", "value": "personal-connectivity"},
         {"key": "ManagedBy", "value": "terraform"}
@@ -68,7 +68,7 @@ elif [[ "${arguments}" == "lightsail get-bundles "* ]]; then
   cat <<JSON
 {
   "bundles": [
-    {"bundleId": "micro_3_0", "transferPerMonthInGb": ${MOCK_ALLOWANCE}}
+    {"bundleId": "${MOCK_BUNDLE}", "transferPerMonthInGb": ${MOCK_ALLOWANCE}}
   ]
 }
 JSON
@@ -80,15 +80,16 @@ EOF
 
 chmod +x "${TEST_DIR}/bin/aws"
 
-for scenario in configured-tokyo default-hong-kong explicit-hong-kong; do
+for scenario in configured-tokyo configured-hong-kong default-seoul explicit-seoul explicit-hong-kong; do
   config_region=""
   region_override=""
-  expected_region=ap-east-1
-  billing_code=APE1
-  instance=hongkong-vpn
-  allowance=1024
-  used=8.05
-  remaining=941.581
+  expected_region=ap-northeast-2
+  billing_code=APN2
+  instance=seoul-vpn
+  bundle=micro_3_0
+  allowance=2048
+  used=4.02
+  remaining=1965.581
   case "${scenario}" in
     configured-tokyo)
       config_region=ap-northeast-1
@@ -99,9 +100,23 @@ for scenario in configured-tokyo default-hong-kong explicit-hong-kong; do
       used=4.02
       remaining=1965.581
       ;;
-    explicit-hong-kong)
-      config_region=ap-northeast-1
-      region_override=ap-east-1
+    explicit-seoul)
+      config_region=ap-east-1
+      region_override=ap-northeast-2
+      ;;
+    configured-hong-kong|explicit-hong-kong)
+      config_region=ap-east-1
+      if [[ "${scenario}" == explicit-hong-kong ]]; then
+        config_region=ap-northeast-2
+        region_override=ap-east-1
+      fi
+      expected_region=ap-east-1
+      billing_code=APE1
+      instance=hongkong-vpn
+      bundle=micro_3_1
+      allowance=1024
+      used=8.05
+      remaining=941.581
       ;;
   esac
 
@@ -109,14 +124,14 @@ for scenario in configured-tokyo default-hong-kong explicit-hong-kong; do
     "PATH=${TEST_DIR}/bin:${PATH}" "AWS_REGION=${region_override}" AWS_DEFAULT_REGION= \
     "MOCK_CONFIG_REGION=${config_region}" "MOCK_REGION=${expected_region}" \
     "MOCK_BILLING_CODE=${billing_code}" "MOCK_INSTANCE=${instance}" \
-    "MOCK_ALLOWANCE=${allowance}" \
+    "MOCK_ALLOWANCE=${allowance}" "MOCK_BUNDLE=${bundle}" \
     "${TEST_DIR}/repo/scripts/usage.sh" >"${TEST_DIR}/usage.log"
 
   grep -Fxq "Instance:  ${instance} (${expected_region})" "${TEST_DIR}/usage.log"
   grep -q '^Inbound:   41\.282 GB$' "${TEST_DIR}/usage.log"
   grep -q '^Outbound:  41\.137 GB$' "${TEST_DIR}/usage.log"
   grep -q '^Total:     82\.419 GB$' "${TEST_DIR}/usage.log"
-  grep -Fxq "Plan:      micro_3_0 — ${allowance} GB/month" "${TEST_DIR}/usage.log"
+  grep -Fxq "Plan:      ${bundle} — ${allowance} GB/month" "${TEST_DIR}/usage.log"
   grep -Fxq "Used:      ${used}%" "${TEST_DIR}/usage.log"
   grep -Fxq "Remaining: ${remaining} GB" "${TEST_DIR}/usage.log"
   grep -q 'AWS marks the current billing data as estimated' "${TEST_DIR}/usage.log"

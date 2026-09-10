@@ -1,7 +1,7 @@
 variable "aws_region" {
   description = "AWS region in which to create the Lightsail instance."
   type        = string
-  default     = "ap-east-1"
+  default     = "ap-northeast-2"
 
   validation {
     condition     = can(regex("^[a-z]{2}(?:-gov)?-[a-z]+-[0-9]+$", var.aws_region))
@@ -12,7 +12,7 @@ variable "aws_region" {
 variable "availability_zone" {
   description = "Lightsail availability zone. It must belong to aws_region."
   type        = string
-  default     = "ap-east-1a"
+  default     = "ap-northeast-2a"
 
   validation {
     condition     = can(regex("^[a-z]{2}(?:-gov)?-[a-z]+-[0-9]+[a-z]$", var.availability_zone))
@@ -23,7 +23,7 @@ variable "availability_zone" {
 variable "instance_name" {
   description = "Name of the disposable Lightsail instance."
   type        = string
-  default     = "hongkong-vpn"
+  default     = "seoul-vpn"
 
   validation {
     condition = (
