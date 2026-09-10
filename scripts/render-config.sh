@@ -1,14 +1,43 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-if [[ $# -ne 3 ]]; then
-  echo "Usage: render-config.sh MANIFEST_JSON SERVER_IPV4 OUTPUT_DIR" >&2
+if [[ $# -ne 4 ]]; then
+  echo "Usage: render-config.sh MANIFEST_JSON SERVER_IPV4 OUTPUT_DIR AWS_REGION" >&2
   exit 64
 fi
 
 readonly MANIFEST_FILE=$1
 readonly SERVER_IP=$2
 readonly OUTPUT_DIR=$3
+readonly DEPLOYMENT_REGION=$4
+
+[[ "${DEPLOYMENT_REGION}" =~ ^[a-z]{2}(-gov)?-[a-z]+-[0-9]+$ ]] || {
+  echo "Error: Invalid AWS region: ${DEPLOYMENT_REGION}" >&2
+  exit 1
+}
+
+case "${DEPLOYMENT_REGION}" in
+  ap-east-1) REGION_NAME="Hong Kong" ;;
+  ap-northeast-1) REGION_NAME="Tokyo" ;;
+  ap-northeast-2) REGION_NAME="Seoul" ;;
+  ap-south-1) REGION_NAME="Mumbai" ;;
+  ap-southeast-1) REGION_NAME="Singapore" ;;
+  ap-southeast-2) REGION_NAME="Sydney" ;;
+  ap-southeast-3) REGION_NAME="Jakarta" ;;
+  ap-southeast-5) REGION_NAME="Malaysia" ;;
+  ca-central-1) REGION_NAME="Canada Central" ;;
+  eu-central-1) REGION_NAME="Frankfurt" ;;
+  eu-north-1) REGION_NAME="Stockholm" ;;
+  eu-south-2) REGION_NAME="Spain" ;;
+  eu-west-1) REGION_NAME="Ireland" ;;
+  eu-west-2) REGION_NAME="London" ;;
+  eu-west-3) REGION_NAME="Paris" ;;
+  sa-east-1) REGION_NAME="São Paulo" ;;
+  us-east-1) REGION_NAME="N. Virginia" ;;
+  us-east-2) REGION_NAME="Ohio" ;;
+  us-west-2) REGION_NAME="Oregon" ;;
+  *) REGION_NAME="${DEPLOYMENT_REGION}" ;;
+esac
 
 command -v jq >/dev/null 2>&1 || {
   echo "Error: Required command not found: jq" >&2
@@ -68,8 +97,8 @@ urlencode() {
   jq -nr --arg value "$1" '$value | @uri'
 }
 
-VLESS_URI="vless://${VLESS_UUID}@${SERVER_IP}:443?encryption=none&flow=xtls-rprx-vision&security=reality&sni=$(urlencode "${REALITY_SNI}")&fp=chrome&pbk=$(urlencode "${REALITY_PUBLIC_KEY}")&sid=$(urlencode "${REALITY_SHORT_ID}")&type=tcp#Tokyo-REALITY"
-HY2_URI="hysteria2://${HY2_PASSWORD}@${SERVER_IP}:443/?sni=hy2.local&insecure=1&obfs=salamander&obfs-password=$(urlencode "${HY2_OBFS_PASSWORD}")&pinSHA256=$(urlencode "${HY2_PIN}")#Tokyo-HY2"
+VLESS_URI="vless://${VLESS_UUID}@${SERVER_IP}:443?encryption=none&flow=xtls-rprx-vision&security=reality&sni=$(urlencode "${REALITY_SNI}")&fp=chrome&pbk=$(urlencode "${REALITY_PUBLIC_KEY}")&sid=$(urlencode "${REALITY_SHORT_ID}")&type=tcp#$(urlencode "${REGION_NAME}-REALITY")"
+HY2_URI="hysteria2://${HY2_PASSWORD}@${SERVER_IP}:443/?sni=hy2.local&insecure=1&obfs=salamander&obfs-password=$(urlencode "${HY2_OBFS_PASSWORD}")&pinSHA256=$(urlencode "${HY2_PIN}")#$(urlencode "${REGION_NAME}-HY2")"
 
 umask 077
 install -d -m 0700 "${OUTPUT_DIR}"

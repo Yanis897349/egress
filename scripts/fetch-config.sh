@@ -9,6 +9,16 @@ require_command jq
 prepare_ssh
 
 IP="$(vpn_ip)"
+# Read the deployed instance's zone so existing state works without a new
+# Terraform output, and local AWS defaults cannot mislabel the endpoint.
+if ! DEPLOYMENT_REGION="$(terraform -chdir="${TERRAFORM_DIR}" show -json | jq -er '
+  .values.root_module.resources[]?
+  | select(.address == "aws_lightsail_instance.vpn")
+  | .values.availability_zone
+  | capture("^(?<region>[a-z]{2}(?:-gov)?-[a-z]+-[0-9]+)[a-z]$").region
+')" || [[ -z "${DEPLOYMENT_REGION}" ]]; then
+  die "Cannot read the deployed AWS region from Terraform state. Run 'make output' to inspect the deployment."
+fi
 STAGING_DIR="$(mktemp -d "${ROOT_DIR}/.secrets-staging.XXXXXX")"
 BACKUP_DIR=""
 
@@ -29,7 +39,8 @@ chmod 0600 "${STAGING_DIR}/manifest.json"
 "${ROOT_DIR}/scripts/render-config.sh" \
   "${STAGING_DIR}/manifest.json" \
   "${IP}" \
-  "${STAGING_DIR}/rendered"
+  "${STAGING_DIR}/rendered" \
+  "${DEPLOYMENT_REGION}"
 
 [[ -s "${STAGING_DIR}/rendered/vless-reality.txt" ]]
 [[ -s "${STAGING_DIR}/rendered/hysteria2.txt" ]]

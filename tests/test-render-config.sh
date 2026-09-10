@@ -31,7 +31,8 @@ EOF
 "${ROOT_DIR}/scripts/render-config.sh" \
   "${TEST_DIR}/manifest.json" \
   "203.0.113.10" \
-  "${TEST_DIR}/output"
+  "${TEST_DIR}/output" \
+  "ap-northeast-1"
 
 VLESS_FILE="${TEST_DIR}/output/vless-reality.txt"
 HY2_FILE="${TEST_DIR}/output/hysteria2.txt"
@@ -46,6 +47,16 @@ grep -q '^hysteria2://a\{48\}@203\.0\.113\.10:443/' "${HY2_FILE}"
 grep -q 'insecure=1' "${HY2_FILE}"
 grep -q 'obfs=salamander' "${HY2_FILE}"
 grep -q 'pinSHA256=AA%3ABB%3ACC' "${HY2_FILE}"
+grep -q '#Tokyo-REALITY$' "${VLESS_FILE}"
+grep -q '#Tokyo-HY2$' "${HY2_FILE}"
+
+for region_and_label in 'ap-east-1 Hong%20Kong' 'ap-southeast-1 Singapore' 'sa-east-1 S%C3%A3o%20Paulo' 'ap-southeast-99 ap-southeast-99'; do
+  read -r region label <<<"${region_and_label}"
+  "${ROOT_DIR}/scripts/render-config.sh" \
+    "${TEST_DIR}/manifest.json" "203.0.113.10" "${TEST_DIR}/regional" "${region}"
+  grep -q "#${label}-REALITY$" "${TEST_DIR}/regional/vless-reality.txt"
+  grep -q "#${label}-HY2$" "${TEST_DIR}/regional/hysteria2.txt"
+done
 
 file_mode() {
   if stat -f '%Lp' "$1" >/dev/null 2>&1; then
@@ -67,6 +78,7 @@ if "${ROOT_DIR}/scripts/render-config.sh" \
   "${TEST_DIR}/invalid.json" \
   "203.0.113.10" \
   "${TEST_DIR}/preserved" \
+  "ap-east-1" \
   >/dev/null 2>&1; then
   echo "Invalid manifest unexpectedly rendered." >&2
   exit 1
@@ -78,9 +90,20 @@ if "${ROOT_DIR}/scripts/render-config.sh" \
   "${TEST_DIR}/manifest.json" \
   "999.0.0.1" \
   "${TEST_DIR}/invalid-ip" \
+  "ap-east-1" \
   >/dev/null 2>&1; then
   echo "Invalid IPv4 address unexpectedly rendered." >&2
   exit 1
 fi
+
+for invalid_region in '' 'Hong Kong' 'ap-east-1a'; do
+  if "${ROOT_DIR}/scripts/render-config.sh" \
+    "${TEST_DIR}/manifest.json" "203.0.113.10" "${TEST_DIR}/invalid-region" "${invalid_region}" \
+    >/dev/null 2>&1; then
+    echo "Invalid region unexpectedly rendered." >&2
+    exit 1
+  fi
+done
+[[ ! -e "${TEST_DIR}/invalid-region" ]]
 
 echo "render-config tests passed."

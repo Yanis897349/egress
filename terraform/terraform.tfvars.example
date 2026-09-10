@@ -1,9 +1,9 @@
-bundle_id     = "medium_3_0"
-key_pair_name = "beijing-vps"
-
-# Optional overrides:
-# aws_region       = "ap-northeast-1"
-# availability_zone = "ap-northeast-1a"
-# instance_name    = "beijing-vpn"
-# blueprint_id     = "ubuntu_24_04"
-# reality_sni      = "www.cloudflare.com"
+# Hong Kong: enable the region and verify the zone, image, bundle, and SSH key.
+# See docs/region/hong-kong.md before replacing an existing Tokyo deployment.
+aws_region        = "ap-east-1"
+availability_zone = "ap-east-1a"
+instance_name     = "hongkong-vpn"
+blueprint_id      = "ubuntu_24_04"
+bundle_id         = "micro_3_0"
+key_pair_name     = "beijing-vps"
+reality_sni       = "www.cloudflare.com"
